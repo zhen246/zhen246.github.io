@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>自己搭建vps的教学帖</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <style>
+      body {
+        padding-top: 54px;
+      }
+      @media (min-width: 992px) {
+        body {
+          padding-top: 56px;
+        }
+      }
+    div.fuck {color:rgb(0,0,255)}
+    </style>
+
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="index.html">vpn</a>
+
+        <!--
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Services</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Contact</a>
+            </li>
+          </ul>
+        </div>
+        -->
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <h2 class="mt-5">自己搭建vps的教学帖</h2><br>
+
+          <div class="lead" align="left">
+            <h4>准备一张支持visa/master的卡及google账户</h4>
+            <p>
+              有visa/master渠道的卡国内很多银行都给办，民生银行甚至有无任何条件的visa借记卡。<br>
+              国内google是个404公司，所以注册google账号本身需要翻墙，这又是个蛋生鸡鸡生蛋、太阳能手电筒的故事。手动滑稽doge脸~大家可以找个还没被封的梯子注册google账号呀~
+            </p>
+            <h4>申请Google Cloud Platform虚拟机部署。</h4>
+            <p>
+              申请地址：<a href= "https://cloud.google.com/free/">请点击</a>
+            </p>
+            <h4>修改防火墙</h4>
+            <p>
+              位置：Google Cloud Platform/产品和服务/网络/vpc网络/防火墙规则<br>
+              删除原有规则，添加新规则如下：<br>
+              网络：default<br>
+              优先级：1000<br>
+              方向：入站<br>
+              对匹配项执行的操作：允许<br>
+              目标：网络中所有的实例<br>
+              来源过滤：ip地址范围<br>
+              来源ip地址范围：0.0.0.0/0<br>
+              次要过滤条件：无<br>
+              协议和端口：全部允许<br>
+              以上设置基本就是允许一切访问，可以根据自己的实际需要修改。
+            </p>
+            <h4>获取静态ip</h4>
+            <p>
+              位置：Google Cloud Platform/产品和服务/网络/vpc网络/外部ip地址<br>
+              点击保留静态地址。
+            </p>
+            <h4>创建计算引擎</h4>
+            <p>
+              位置：Google Cloud Platform/产品和服务/计算/Compute Engine/VM实例
+              name：随便起<br>
+              地区：这个是<a href= "https://cloud.google.com/about/locations/">谷歌全球服务器位置</a>。日本和台湾速度快，美国服务器被封的少。推荐日本。<br>
+              机器类型：微型（1个共享vCPU)0.6GB内存，f1-micro<br>
+              启动磁盘：Ubuntu 16.04.LTS<br>
+              防火墙：允许http/允许https<br>
+              创建计算引擎之后把刚才申请的外部ip赋给这个vm实例。
+            </p>
+            <h4>开启BBR</h4>
+            <p>
+              引用<a href= "https://teddysun.com/">teddysun</a>的数个帖子及github链接，特此感谢。侵删~<br>
+              位置：Google Cloud Platform/产品和服务/计算/Compute Engine/VM实例/连接/ssh<br>
+              点击ssh<br>
+              输入以下命令：<br>
+              获取root权限：sudo -i<br>
+              wget --no-check-certificate https://github.com/teddysun/across/raw/master/bbr.sh<br>
+              chmod +x bbr.sh<br>
+              ./bbr.sh<br><br>
+              然后输入：uname -r<br>
+              返回：4.13.0-1011-gcp或者更高版本<br><br>
+              然后输入：sysctl net.ipv4.tcp_available_congestion_control<br>
+              返回：net.ipv4.tcp_available_congestion_control = bbr cubic reno<br><br>
+              然后输入：sysctl net.ipv4.tcp_congestion_control<br>
+              返回：net.ipv4.tcp_congestion_control = bbr<br><br>
+              然后输入：net.core.default_qdisc = fq<br>
+              返回：net.core.default_qdisc = fq<br><br>
+              然后输入：lsmod | grep bbr<br>
+              返回：tcp_bbr和一些数字 就说明你的bbr已经弄好了。
+            </p>
+            <h4>搭建Shadowsocks server</h4>
+            <p>
+
+              输入：<br>
+              wget --no-check-certificate -O shadowsocks-all.sh https://raw.githubusercontent.com/teddysun/shadowsocks_install/master/shadowsocks-all.sh
+              chmod +x shadowsocks-all.sh
+              ./shadowsocks-all.sh 2>&1 | tee shadowsocks-all.log<br><br>
+              选择Shadowsocks<br>
+              Which Shadowsocks server you'd select:<br>
+              1) Shadowsocks-Python<br>
+              2) ShadowsocksR<br>
+              3) Shadowsocks-Go<br>
+              4) Shadowsocks-libev<br>
+              Please enter a number (Default Shadowsocks-Python):<br>
+              我选的1<br><br>
+              然后设置一个密码<br>
+              Please enter password for Shadowsocks-Python<br>
+              (Default password: teddysun.com):<br><br>
+              设置端口<br>
+              Please enter a port for Shadowsocks-Python [1-65535]<br>
+              (Default port: 9225):443<br>
+              Please select stream cipher for Shadowsocks-Python:<br>
+              1) aes-256-gcm<br>
+              2) aes-192-gcm<br>
+              3) aes-128-gcm<br>
+              4) aes-256-ctr<br>
+              5) aes-192-ctr<br>
+              6) aes-128-ctr<br>
+              7) aes-256-cfb<br>
+              8) aes-192-cfb<br>
+              9) aes-128-cfb<br>
+              10) camellia-128-cfb<br>
+              11) camellia-192-cfb<br>
+              12) camellia-256-cfb<br>
+              13) xchacha20-ietf-poly1305<br>
+              14) chacha20-ietf-poly1305<br>
+              15) chacha20-ietf<br>
+              16) chacha20<br>
+              17) salsa20<br>
+              18) rc4-md5<br>
+              Which cipher you'd select(Default: aes-256-gcm):<br>
+              这里推荐选7<br>
+
+
+            </p>
+            <h4>然后就大功告成啦</h4>
+            <p>
+              Congratulations, Shadowsocks-Python server install completed!<br>
+              Your Server IP        :  你申请的静态ip<br>
+              Your Server Port      :  443<br>
+              Your Password         :  你设置的密码<br>
+              Your Encryption Method:  aes-256-cfb<br>
+
+            </p>
+
+
+
+
+
+
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <hr class="my-4">
+
+
+
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  </body>
+
+</html>
