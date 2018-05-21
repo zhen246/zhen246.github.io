@@ -125,7 +125,7 @@
               返回：net.ipv4.tcp_available_congestion_control = bbr cubic reno<br><br>
               然后输入：sysctl net.ipv4.tcp_congestion_control<br>
               返回：net.ipv4.tcp_congestion_control = bbr<br><br>
-              然后输入：sysctl net.core.default_qdisc
+              然后输入：sysctl net.core.default_qdisc<br>
               返回：net.core.default_qdisc = fq<br><br>
               然后输入：lsmod | grep bbr<br>
               返回：tcp_bbr和一些数字 就说明你的bbr已经弄好了。
